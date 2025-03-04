@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 // Replace with your Hostinger MySQL credentials
-$db = new mysqli('mysql.hostinger.com', 'u123456_nyanuser', 'YourStrongPassword123!', 'u123456_nyan');
+$db = new mysqli('mysql.hostinger.com', 'u775386788_nyanuser', 'PxBeoY5Ei#xB', 'u775386788_nyan');
 if ($db->connect_error) {
     die(json_encode(['error' => 'Database connection failed']));
 }

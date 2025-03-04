@@ -56,7 +56,7 @@ let leaderboard = []; // Initialize empty, will fetch from server
 const maxLeaderboardEntries = 5;
 
 // Fetch initial leaderboard from server
-fetch('http://localhost/nyan/get_leaderboard.php') // Use localhost for local testing
+fetch('https://codelabhaven.com/nyan/get_leaderboard.php')
     .then(response => response.json())
     .then(data => leaderboard = data)
     .catch(error => console.error('Error fetching initial leaderboard:', error));
@@ -183,7 +183,7 @@ function spawnPipe() {
 
 function updateLeaderboard() {
     const newEntry = { name: playerName, score: score };
-    fetch('http://localhost/nyan/save_score.php', { // Local testing URL
+    fetch('https://codelabhaven.com/nyan/save_score.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `name=${encodeURIComponent(playerName)}&score=${score}`
@@ -192,7 +192,7 @@ function updateLeaderboard() {
     .then(data => {
         if (data.success) {
             // Refresh leaderboard from server
-            fetch('http://localhost/nyan/get_leaderboard.php')
+            fetch('https://codelabhaven.com/nyan/get_leaderboard.php')
                 .then(response => response.json())
                 .then(data => {
                     leaderboard = data;
