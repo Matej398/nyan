@@ -6,7 +6,7 @@ const bgCanvas = document.getElementById("backgroundCanvas");
 const bgCtx = bgCanvas ? bgCanvas.getContext("2d") : null;
 
 if (!gameCtx || !bgCtx) {
-    console.error(" Canvas context not initialized. Check canvas IDs in index.html.");
+    console.error("Canvas context not initialized. Check canvas IDs in index.html.");
 } else {
     gameCanvas.style.imageRendering = "pixelated";
     gameCtx.imageSmoothingEnabled = false;
@@ -114,7 +114,7 @@ document.addEventListener("keydown", (e) => {
             gameStarted = true;
         } else if (!gameOver && !showLeaderboard && !showNamePrompt) {
             velocity = jump;
-        } else if (Date.now() - crashTime > restartDelay) {
+        } else if (.hwTime() - crashTime > restartDelay) {
             if (showLeaderboard) {
                 showLeaderboard = false;
                 resetGame();
@@ -442,7 +442,6 @@ function update() {
             drawTextWithBorder(startText, startX, 400, 18);
 
             const leaderboardText = "Press Enter for Leaderboard";
-            gameCtx.font = `${18 * scale}px 'Pixelify Sans'`;
             const leaderboardWidth = gameCtx.measureText(leaderboardText).width;
             const leaderboardX = (gameCanvas.width - leaderboardWidth) / 2 / scale;
             drawTextWithBorder(leaderboardText, leaderboardX, 430, 18);
