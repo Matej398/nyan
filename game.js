@@ -52,8 +52,14 @@ let showLeaderboard = false;
 let showNamePrompt = false;
 let playerName = "";
 
-let leaderboard = JSON.parse(localStorage.getItem("nyanLeaderboard")) || [];
+let leaderboard = []; // Initialize empty, will fetch from server
 const maxLeaderboardEntries = 5;
+
+// Fetch initial leaderboard from server
+fetch('http://localhost/nyan/get_leaderboard.php') // Use localhost for local testing
+    .then(response => response.json())
+    .then(data => leaderboard = data)
+    .catch(error => console.error('Error fetching initial leaderboard:', error));
 
 const nyanCatImg = new Image();
 nyanCatImg.src = "./nyan-sprite.png";
@@ -114,7 +120,7 @@ document.addEventListener("keydown", (e) => {
             gameStarted = true;
         } else if (!gameOver && !showLeaderboard && !showNamePrompt) {
             velocity = jump;
-        } else if (.hwTime() - crashTime > restartDelay) {
+        } else if (Date.now() - crashTime > restartDelay) {
             if (showLeaderboard) {
                 showLeaderboard = false;
                 resetGame();
@@ -176,10 +182,30 @@ function spawnPipe() {
 }
 
 function updateLeaderboard() {
-    leaderboard.push({ name: playerName, score: score });
-    leaderboard.sort((a, b) => b.score - a.score);
-    leaderboard = leaderboard.slice(0, maxLeaderboardEntries);
-    localStorage.setItem("nyanLeaderboard", JSON.stringify(leaderboard));
+    const newEntry = { name: playerName, score: score };
+    fetch('http://localhost/nyan/save_score.php', { // Local testing URL
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `name=${encodeURIComponent(playerName)}&score=${score}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Refresh leaderboard from server
+            fetch('http://localhost/nyan/get_leaderboard.php')
+                .then(response => response.json())
+                .then(data => {
+                    leaderboard = data;
+                    showLeaderboard = true;
+                    showNamePrompt = false;
+                    if (namePrompt) namePrompt.style.display = "none";
+                })
+                .catch(error => console.error('Error refreshing leaderboard:', error));
+        } else {
+            console.error('Failed to save score:', data.error);
+        }
+    })
+    .catch(error => console.error('Error saving score:', error));
 }
 
 function resetGame() {
