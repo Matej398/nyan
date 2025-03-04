@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nyan Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="./nyan-icon.png">
+</head>
+<body>
+    <div class="header">
+        <h1>nyan game</h1>
+        <span class="version">version 1.0</span>
+    </div>
+    <canvas id="backgroundCanvas" width="1920" height="1080"></canvas>
+    <canvas id="gameCanvas" width="800" height="1200"></canvas>
+    <div id="namePrompt">
+        <h2>Enter Your Name</h2>
+        <input type="text" id="nameInput" maxlength="15" placeholder="Your Name">
+        <br>
+        <button id="submitName">Submit</button>
+    </div>
+    <footer>
+        Design by <a href="https://x.com/TheBlecky398" target="_blank">Blecky398</a>, made by grok3.
+    </footer>
+    <script src="game.js"></script>
+</body>
+</html>

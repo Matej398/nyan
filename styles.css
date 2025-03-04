@@ -1,0 +1,180 @@
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #003366; /* Deep blue background */
+    position: relative;
+    overflow: hidden;
+    flex-direction: column; /* Stack header and game vertically */
+}
+
+.header {
+    position: absolute;
+    top: 40px; /* More spacing above */
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 5; /* Above canvases but below name prompt */
+}
+
+h1 {
+    font-family: 'Pixelify Sans', sans-serif;
+    font-size: 72px; /* Bigger font */
+    color: #ffffff;
+    text-shadow: 
+        -2px -2px 0 #000000,  
+         2px -2px 0 #000000,  
+        -2px  2px 0 #000000,  
+         2px  2px 0 #000000,
+        -2px  0px 0 #000000,  
+         2px  0px 0 #000000,  
+         0px -2px 0 #000000,  
+         0px  2px 0 #000000; /* Black border effect */
+    margin: 0;
+}
+
+.version {
+    font-family: 'Pixelify Sans', sans-serif;
+    font-size: 24pt; /* Back to 24pt */
+    color: #ffffff;
+    text-shadow: 
+        -2px -2px 0 #000000,  
+         2px -2px 0 #000000,  
+        -2px  2px 0 #000000,  
+         2px  2px 0 #000000,
+        -2px  0px 0 #000000,  
+         2px  0px 0 #000000,  
+         0px -2px 0 #000000,  
+         0px  2px 0 #000000; /* Black border effect */
+    display: block; /* Stack below h1 */
+    margin-top: 5px; /* Small spacing between nyan game and version 1.0 */
+}
+
+#backgroundCanvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1920px; /* Native size, no stretching */
+    height: 1080px;
+    z-index: 0; /* Behind game canvas */
+}
+
+#gameCanvas {
+    position: relative;
+    width: 400px; /* Display size */
+    height: 600px;
+    z-index: 1; /* Above background */
+    border: 6px solid transparent; /* 3x3 pixelated doubled for scale */
+    box-sizing: border-box;
+    box-shadow: 
+        4px 0 0 0 #ffffff,   /* Right */
+        -4px 0 0 0 #ffffff,  /* Left */
+        0 4px 0 0 #ffffff,   /* Bottom */
+        0 -4px 0 0 #ffffff,  /* Top */
+        8px 0 0 0 #000000,  /* Outer right */
+        -8px 0 0 0 #000000, /* Outer left */
+        0 8px 0 0 #000000,  /* Outer bottom */
+        0 -8px 0 0 #000000; /* Outer top */
+}
+
+#namePrompt {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 51, 102, 0.9); /* Semi-transparent deep blue */
+    padding: 20px;
+    border: 6px solid transparent;
+    box-shadow: 
+        4px 0 0 0 #ffffff,
+        -4px 0 0 0 #ffffff,
+        0 4px 0 0 #ffffff,
+        0 -4px 0 0 #ffffff,
+        8px 0 0 0 #000000,
+        -8px 0 0 0 #000000,
+        0 8px 0 0 #000000,
+        0 -8px 0 0 #000000;
+    color: #ffffff;
+    font-family: 'Pixelify Sans', sans-serif;
+    text-align: center;
+    z-index: 10; /* Above game canvas */
+}
+
+#namePrompt h2 {
+    margin: 0 0 15px 0;
+    font-size: 32px;
+    color: #ffffff;
+    text-shadow: 
+        -2px -2px 0 #000000,  
+         2px -2px 0 #000000,  
+        -2px  2px 0 #000000,  
+         2px  2px 0 #000000,
+        -2px  0px 0 #000000,  
+         2px  0px 0 #000000,  
+         0px -2px 0 #000000,  
+         0px  2px 0 #000000; /* Black border effect */
+}
+
+#nameInput {
+    margin: 10px 0;
+    padding: 8px;
+    font-size: 18px;
+    font-family: 'Pixelify Sans', sans-serif;
+    background: #ffffff;
+    border: 4px solid #000000;
+    color: #000000;
+    width: 200px;
+    box-sizing: border-box;
+}
+
+#nameInput::placeholder {
+    color: #666666;
+}
+
+#submitName {
+    padding: 8px 16px;
+    font-size: 18px;
+    font-family: 'Pixelify Sans', sans-serif;
+    background: #fd98fd; /* Matching leaderboard name color */
+    border: 4px solid #000000;
+    color: #000000;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#submitName:hover {
+    background: #ff66ff; /* Lighter pink on hover */
+}
+
+footer {
+    position: absolute;
+    bottom: 20px; /* Space from bottom */
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Pixelify Sans', sans-serif;
+    font-size: 18px;
+    color: #ffffff;
+    text-shadow: 
+        -2px -2px 0 #000000,  
+         2px -2px 0 #000000,  
+        -2px  2px 0 #000000,  
+         2px  2px 0 #000000,
+        -2px  0px 0 #000000,  
+         2px  0px 0 #000000,  
+         0px -2px 0 #000000,  
+         0px  2px 0 #000000; /* Black border effect */
+    z-index: 5; /* Above canvases but below name prompt */
+}
+
+footer a {
+    color: #fd98fd; /* Match leaderboard name color */
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: #ff66ff; /* Lighter pink on hover */
+}
