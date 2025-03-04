@@ -1,50 +1,46 @@
 // game.js
 
-// Get the canvases and contexts
 const gameCanvas = document.getElementById("gameCanvas");
-const gameCtx = gameCanvas.getContext("2d");
+const gameCtx = gameCanvas ? gameCanvas.getContext("2d") : null;
 const bgCanvas = document.getElementById("backgroundCanvas");
-const bgCtx = bgCanvas.getContext("2d");
+const bgCtx = bgCanvas ? bgCanvas.getContext("2d") : null;
 
-// Optimize canvases for pixel-perfect rendering
-gameCanvas.style.imageRendering = "pixelated";
-gameCtx.imageSmoothingEnabled = false;
-bgCanvas.style.imageRendering = "pixelated";
-bgCtx.imageSmoothingEnabled = false;
+if (!gameCtx || !bgCtx) {
+    console.error(" Canvas context not initialized. Check canvas IDs in index.html.");
+} else {
+    gameCanvas.style.imageRendering = "pixelated";
+    gameCtx.imageSmoothingEnabled = false;
+    bgCanvas.style.imageRendering = "pixelated";
+    bgCtx.imageSmoothingEnabled = false;
+}
 
-// Scale factor for doubled resolution
 const scale = 2;
+const speed = 1000;
+let lastTime = performance.now();
 
-// Animation timing
-const speed = 1000; // 1s pulsation cycle
-
-// Nyan Cat properties
 let nyanX = 100 * scale;
-let nyanY = (gameCanvas.height / 2 - 20) * scale;
+let nyanY = gameCanvas ? (gameCanvas.height / 2 - 20) * scale : 0;
 let velocity = 0;
-const gravity = 0.15 * scale;
-const jump = -4 * scale;
+const gravity = 0.4 * scale;
+const jump = -7 * scale;
 let frameIndex = 0;
 let frameTimer = 0;
-const frameDelay = 5;
+const frameDelay = 2;
 let tiltAngle = 0;
 
-// Nyan Cat sprite dimensions
-const frameWidth = 74; // Native sprite size
+const frameWidth = 74;
 const frameHeight = 42;
-const displayWidth = frameWidth * 1.2 * scale; // 20% larger
-const displayHeight = frameHeight * 1.2 * scale; // 20% larger
+const displayWidth = frameWidth * 1.2 * scale;
+const displayHeight = frameHeight * 1.2 * scale;
 const totalFrames = 12;
 
-// Obstacles (rainbow pipes)
 let pipes = [];
 const pipeWidth = 60 * scale;
-const pipeGap = 200 * scale; // Vertical gap
-let pipeSpeed = 1 * scale;
+const pipeGap = 200 * scale;
+let pipeSpeed = 2.5 * scale;
 let pipeSpawnTimer = 0;
-const pipeSpawnInterval = 200; // Horizontal gap
+const pipeSpawnInterval = 100;
 
-// Game state
 let score = 0;
 let highScore = 0;
 let gameOver = false;
@@ -53,81 +49,64 @@ let crashTime = 0;
 const restartDelay = 500;
 let animationFrameId = null;
 let showLeaderboard = false;
-let showNamePrompt = false; // New flag for name input
+let showNamePrompt = false;
 let playerName = "";
 
-// Leaderboard storage
 let leaderboard = JSON.parse(localStorage.getItem("nyanLeaderboard")) || [];
 const maxLeaderboardEntries = 5;
 
-// Load Nyan Cat sprite sheet
 const nyanCatImg = new Image();
 nyanCatImg.src = "./nyan-sprite.png";
+nyanCatImg.onerror = () => console.error("Failed to load nyan-sprite.png");
 
-// Name input popup elements
 const namePrompt = document.getElementById("namePrompt");
 const nameInput = document.getElementById("nameInput");
 const submitNameBtn = document.getElementById("submitName");
 
-// Star patterns (7x7 grids)
 const starStyles = [
-    // Star 1: Bold Cross
-    [
-        [0, 0, 1, 1, 1, 0, 0],
-        [0, 0, 1, 1, 1, 0, 0],
-        [1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 1, 1, 1, 0, 0],
-        [0, 0, 1, 1, 1, 0, 0]
-    ],
-    // Star 2: Thin Cross
-    [
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 1, 1, 1, 0, 0],
-        [1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 1, 1, 1, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0]
-    ],
-    // Star 3: Diamond Cross
-    [
-        [0, 0, 1, 1, 1, 0, 0],
-        [0, 1, 0, 0, 0, 1, 0],
-        [1, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 1],
-        [0, 1, 0, 0, 0, 1, 0],
-        [0, 0, 1, 1, 1, 0, 0]
-    ]
+    [[0,0,1,1,1,0,0],[0,0,1,1,1,0,0],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1],[1,1,1,1,1,1,1],[0,0,1,1,1,0,0],[0,0,1,1,1,0,0]],
+    [[0,0,0,1,0,0,0],[0,0,0,1,0,0,0],[0,0,1,1,1,0,0],[1,1,1,1,1,1,1],[0,0,1,1,1,0,0],[0,0,0,1,0,0,0],[0,0,0,1,0,0,0]],
+    [[0,0,1,1,1,0,0],[0,1,0,0,0,1,0],[1,0,0,0,0,0,1],[1,0,0,0,0,0,1],[1,0,0,0,0,0,1],[0,1,0,0,0,1,0],[0,0,1,1,1,0,0]]
 ];
 
-// Random star arrays
-const bgStars = [];
-const gameStars = [];
-for (let i = 0; i < 100; i++) { // 100 stars for background
-    const size = Math.floor(Math.random() * 11) + 5; // Reduced from 7-21 to 5-15
-    bgStars.push({
-        x: Math.floor(Math.random() * bgCanvas.width),
-        y: Math.floor(Math.random() * bgCanvas.height),
-        baseSize: size,
-        style: starStyles[Math.floor(Math.random() * starStyles.length)],
-        phase: Math.random() * Math.PI * 2
-    });
-}
-for (let i = 0; i < 6; i++) { // 6 stars for game
-    const size = Math.floor(Math.random() * 11) + 5; // Reduced from 7-21 to 5-15
-    gameStars.push({
-        x: Math.floor(Math.random() * gameCanvas.width),
-        y: Math.floor(Math.random() * gameCanvas.height),
-        baseSize: size,
-        style: starStyles[Math.floor(Math.random() * starStyles.length)],
-        phase: Math.random() * Math.PI * 2
-    });
+function resizeBackgroundCanvas() {
+    if (bgCanvas) {
+        bgCanvas.width = window.innerWidth;
+        bgCanvas.height = window.innerHeight;
+        bgStars.length = 0;
+        const starDensity = 0.00005;
+        const starCount = Math.floor(bgCanvas.width * bgCanvas.height * starDensity);
+        for (let i = 0; i < starCount; i++) {
+            const size = Math.floor(Math.random() * 11) + 5;
+            bgStars.push({
+                x: Math.floor(Math.random() * bgCanvas.width),
+                y: Math.floor(Math.random() * bgCanvas.height),
+                baseSize: size,
+                style: starStyles[Math.floor(Math.random() * starStyles.length)],
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+    }
 }
 
-// Input handling
+const bgStars = [];
+resizeBackgroundCanvas();
+window.addEventListener('resize', resizeBackgroundCanvas);
+
+const gameStars = [];
+if (gameCanvas) {
+    for (let i = 0; i < 6; i++) {
+        const size = Math.floor(Math.random() * 11) + 5;
+        gameStars.push({
+            x: Math.floor(Math.random() * gameCanvas.width),
+            y: Math.floor(Math.random() * gameCanvas.height),
+            baseSize: size,
+            style: starStyles[Math.floor(Math.random() * starStyles.length)],
+            phase: Math.random() * Math.PI * 2
+        });
+    }
+}
+
 document.addEventListener("keydown", (e) => {
     if (e.code === "Space") {
         e.preventDefault();
@@ -139,16 +118,16 @@ document.addEventListener("keydown", (e) => {
             if (showLeaderboard) {
                 showLeaderboard = false;
                 resetGame();
-            } else if (gameOver && !showNamePrompt) {
+            } else if (gameOver && !showNamePrompt && namePrompt) {
                 showNamePrompt = true;
                 namePrompt.style.display = "block";
-                nameInput.focus();
+                nameInput?.focus();
             }
         }
     } else if (e.code === "Enter") {
         e.preventDefault();
         if (!gameStarted && !showLeaderboard && !showNamePrompt) {
-            showLeaderboard = true; // Show leaderboard from start screen
+            showLeaderboard = true;
         } else if (showNamePrompt) {
             submitName();
         }
@@ -159,7 +138,8 @@ document.addEventListener("keydown", (e) => {
         }
     }
 });
-gameCanvas.addEventListener("click", () => {
+
+gameCanvas?.addEventListener("click", () => {
     if (!gameStarted && !showLeaderboard && !showNamePrompt) {
         gameStarted = true;
     } else if (!gameOver && !showLeaderboard && !showNamePrompt) {
@@ -168,26 +148,24 @@ gameCanvas.addEventListener("click", () => {
         if (showLeaderboard) {
             showLeaderboard = false;
             resetGame();
-        } else if (gameOver && !showNamePrompt) {
+        } else if (gameOver && !showNamePrompt && namePrompt) {
             showNamePrompt = true;
             namePrompt.style.display = "block";
-            nameInput.focus();
+            nameInput?.focus();
         }
     }
 });
 
-// Handle name submission
-submitNameBtn.addEventListener("click", submitName);
+submitNameBtn?.addEventListener("click", submitName);
 function submitName() {
-    playerName = nameInput.value.trim() || "Nyanonymous"; // Default if empty
-    namePrompt.style.display = "none";
+    playerName = nameInput?.value.trim() || "Nyanonymous";
+    if (namePrompt) namePrompt.style.display = "none";
     showNamePrompt = false;
     updateLeaderboard();
     showLeaderboard = true;
-    nameInput.value = ""; // Clear input
+    if (nameInput) nameInput.value = "";
 }
 
-// Generate pipes
 function spawnPipe() {
     const pipeHeight = Math.floor(Math.random() * (gameCanvas.height - pipeGap - 150 * scale)) + 75 * scale;
     pipes.push({
@@ -197,21 +175,19 @@ function spawnPipe() {
     });
 }
 
-// Update leaderboard with name
 function updateLeaderboard() {
     leaderboard.push({ name: playerName, score: score });
-    leaderboard.sort((a, b) => b.score - a.score); // Sort descending
-    leaderboard = leaderboard.slice(0, maxLeaderboardEntries); // Keep top 5
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard = leaderboard.slice(0, maxLeaderboardEntries);
     localStorage.setItem("nyanLeaderboard", JSON.stringify(leaderboard));
 }
 
-// Reset game
 function resetGame() {
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
     }
     nyanX = 100 * scale;
-    nyanY = gameCanvas.height / 2 - displayHeight / 2;
+    nyanY = gameCanvas ? gameCanvas.height / 2 - displayHeight / 2 : 0;
     velocity = 0;
     pipes = [];
     if (score > highScore) highScore = score;
@@ -227,7 +203,6 @@ function resetGame() {
     update();
 }
 
-// Draw rainbow pipe with rounded ends
 function drawRainbowPipe(x, topHeight) {
     const colors = ["#FF0000", "#FF7F00", "#FFFF00", "#00FF00", "#0000FF", "#4B0082", "#8B00FF"];
     const stripeHeightTop = Math.ceil(topHeight / colors.length) + 2 * scale;
@@ -254,45 +229,47 @@ function drawRainbowPipe(x, topHeight) {
     gameCtx.fill();
 }
 
-// Draw text with black border (modified to accept color)
 function drawTextWithBorder(text, x, y, fontSize, color = "#FFFFFF") {
-    gameCtx.font = `${fontSize * scale}px 'Pixelify Sans'`;
-    gameCtx.lineWidth = 10;
-    gameCtx.strokeStyle = "#000000";
-    gameCtx.fillStyle = color;
-    gameCtx.strokeText(text, x * scale, y * scale);
-    gameCtx.fillText(text, x * scale, y * scale);
+    if (gameCtx) {
+        gameCtx.font = `${fontSize * scale}px 'Pixelify Sans'`;
+        gameCtx.lineWidth = 10;
+        gameCtx.strokeStyle = "#000000";
+        gameCtx.fillStyle = color;
+        gameCtx.strokeText(text, x * scale, y * scale);
+        gameCtx.fillText(text, x * scale, y * scale);
+    }
 }
 
-// Draw pulsating stars
 function drawStars(ctx, stars, canvasWidth, canvasHeight) {
-    ctx.fillStyle = "#FFFFFF";
-    const time = Date.now();
-    stars.forEach(star => {
-        const twinkle = Math.sin((time / speed) * Math.PI * 2 + star.phase) * 0.5 + 0.5;
-        const sizeFactor = 0.5 + twinkle * 0.5;
-        const ps = Math.floor(star.baseSize * sizeFactor * (canvasWidth === gameCanvas.width ? scale : 1) / 7);
-        const centerX = star.x;
-        const centerY = star.y;
-        const offset = ps * 3;
+    if (ctx) {
+        ctx.fillStyle = "#FFFFFF";
+        const time = Date.now();
+        stars.forEach(star => {
+            const twinkle = Math.sin((time / speed) * Math.PI * 2 + star.phase) * 0.5 + 0.5;
+            const sizeFactor = 0.5 + twinkle * 0.5;
+            const ps = Math.floor(star.baseSize * sizeFactor * (canvasWidth === gameCanvas?.width ? scale : 1) / 7);
+            const centerX = star.x;
+            const centerY = star.y;
+            const offset = ps * 3;
 
-        for (let y = 0; y < 7; y++) {
-            for (let x = 0; x < 7; x++) {
-                if (star.style[y][x] === 1) {
-                    ctx.fillRect(
-                        centerX - offset + x * ps,
-                        centerY - offset + y * ps,
-                        ps,
-                        ps
-                    );
+            for (let y = 0; y < 7; y++) {
+                for (let x = 0; x < 7; x++) {
+                    if (star.style[y][x] === 1) {
+                        ctx.fillRect(
+                            centerX - offset + x * ps,
+                            centerY - offset + y * ps,
+                            ps,
+                            ps
+                        );
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 }
 
-// Draw leaderboard (centered, with names)
 function drawLeaderboard() {
+    if (!gameCtx) return;
     const boxWidth = 300 * scale;
     const boxHeight = 400 * scale;
     const boxX = (gameCanvas.width - boxWidth) / 2;
@@ -310,7 +287,7 @@ function drawLeaderboard() {
     leaderboard.forEach((entry, index) => {
         const nameText = `${index + 1}. ${entry.name}`;
         const scoreText = `Score: ${entry.score}`;
-        gameCtx.font = `${22 * scale}px 'Pixelify Sans'`; // Larger name font
+        gameCtx.font = `${22 * scale}px 'Pixelify Sans'`;
         const nameWidth = gameCtx.measureText(nameText).width;
         const nameX = boxX + (boxWidth - nameWidth) / 2;
         drawTextWithBorder(nameText, nameX / scale, (boxY / scale) + 100 + index * 50, 22, "#fd98fd");
@@ -328,12 +305,15 @@ function drawLeaderboard() {
     drawTextWithBorder(promptText, promptX / scale, (boxY / scale) + 370, 18);
 }
 
-// Game loop
 function update() {
     if (!gameCtx || !bgCtx) {
         console.log("ERROR: Canvas context not initialized!");
         return;
     }
+
+    const now = performance.now();
+    const deltaTime = (now - lastTime) / 16.67;
+    lastTime = now;
 
     bgCtx.fillStyle = "#003366";
     bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
@@ -346,20 +326,20 @@ function update() {
     if (showLeaderboard) {
         drawLeaderboard();
     } else if (showNamePrompt) {
-        // Name prompt handled by HTML overlay, just pause game rendering
+        // Name prompt handled by HTML
     } else if (!gameStarted) {
         nyanY = gameCanvas.height / 2 - displayHeight / 2 + Math.sin(Date.now() * 0.002) * 10 * scale;
     } else if (gameOver) {
-        velocity += gravity;
-        nyanY += velocity;
+        velocity += gravity * deltaTime;
+        nyanY += velocity * deltaTime;
         if (nyanY >= gameCanvas.height - displayHeight) {
             nyanY = gameCanvas.height - displayHeight;
             velocity = 0;
         }
-        tiltAngle = Math.min(tiltAngle + 0.05, Math.PI / 4);
+        tiltAngle = Math.min(tiltAngle + 0.05 * deltaTime, Math.PI / 4);
     } else {
-        velocity += gravity;
-        nyanY += velocity;
+        velocity += gravity * deltaTime;
+        nyanY += velocity * deltaTime;
         if (nyanY >= gameCanvas.height - displayHeight) {
             nyanY = gameCanvas.height - displayHeight;
             gameOver = true;
@@ -367,7 +347,7 @@ function update() {
         }
         if (nyanY < 0) nyanY = 0;
 
-        pipeSpawnTimer++;
+        pipeSpawnTimer += deltaTime;
         if (pipeSpawnTimer >= pipeSpawnInterval) {
             spawnPipe();
             pipeSpawnTimer = 0;
@@ -376,7 +356,7 @@ function update() {
 
     if (!showLeaderboard && !showNamePrompt) {
         pipes.forEach((pipe) => {
-            if (!gameOver && gameStarted) pipe.x -= pipeSpeed;
+            if (!gameOver && gameStarted) pipe.x -= pipeSpeed * deltaTime;
             drawRainbowPipe(pipe.x, pipe.topHeight);
         });
 
@@ -407,7 +387,7 @@ function update() {
 
         if (nyanCatImg.complete && nyanCatImg.naturalWidth !== 0) {
             if (!gameOver) {
-                frameTimer++;
+                frameTimer += deltaTime;
                 if (frameTimer >= frameDelay) {
                     frameIndex = (frameIndex + 1) % totalFrames;
                     frameTimer = 0;
@@ -462,6 +442,7 @@ function update() {
             drawTextWithBorder(startText, startX, 400, 18);
 
             const leaderboardText = "Press Enter for Leaderboard";
+            gameCtx.font = `${18 * scale}px 'Pixelify Sans'`;
             const leaderboardWidth = gameCtx.measureText(leaderboardText).width;
             const leaderboardX = (gameCanvas.width - leaderboardWidth) / 2 / scale;
             drawTextWithBorder(leaderboardText, leaderboardX, 430, 18);
@@ -471,6 +452,5 @@ function update() {
     animationFrameId = requestAnimationFrame(update);
 }
 
-// Start game loop
 console.log("Game starting...");
 update();
