@@ -52,4 +52,102 @@ If you encounter any issues:
 - `test_db.php` - Tool to test database connection
 - `import_db.php` - Tool to import the database schema and data from PHP
 - `nyan_database.sql` - SQL file containing the database schema and data
-- `import_sql.php` - Tool to import the database from the SQL file 
+- `import_sql.php` - Tool to import the database from the SQL file
+
+# GitHub Webhook Deployment System
+
+This system automatically deploys your GitHub repositories to your server whenever you push changes.
+
+## Files
+
+- `webhook-handler.php` - The main script that processes GitHub webhooks
+- `repositories.json` - Configuration file for your repositories
+- `generate-secrets.php` - Script to generate secure secret keys
+- `README.md` - This file
+
+## Setup Instructions
+
+### 1. Server Setup
+
+1. Create the necessary directories on your server:
+
+```bash
+mkdir -p /var/www/webhooks
+mkdir -p /var/www/deployment-config
+```
+
+2. Upload the files to your server:
+
+```bash
+# Upload webhook-handler.php to /var/www/webhooks/
+# Upload repositories.json to /var/www/deployment-config/
+```
+
+3. Set proper permissions:
+
+```bash
+chmod 644 /var/www/webhooks/webhook-handler.php
+chmod 644 /var/www/deployment-config/repositories.json
+```
+
+4. Make sure the web server user (www-data) has permission to execute git commands:
+
+```bash
+# Add www-data to your user group
+usermod -a -G your_username www-data
+
+# Make sure your project directories are accessible
+chmod 775 /var/www/html/codelabhaven/projects
+```
+
+### 2. Generate Secret Keys
+
+1. Run the `generate-secrets.php` script locally:
+
+```bash
+php generate-secrets.php
+```
+
+2. Upload the updated `repositories.json` file to your server:
+
+```bash
+# Upload to /var/www/deployment-config/repositories.json
+```
+
+### 3. Set Up GitHub Webhooks
+
+For each repository:
+
+1. Go to your GitHub repository (e.g., https://github.com/Matej398/nyan-game)
+2. Click on "Settings" > "Webhooks" > "Add webhook"
+3. Fill in the form:
+   - Payload URL: `https://codelabhaven.com/webhooks/webhook-handler.php`
+   - Content type: `application/json`
+   - Secret: Use the generated secret for this repository
+   - Which events would you like to trigger this webhook?: Select "Just the push event"
+   - Active: Check this box
+4. Click "Add webhook"
+
+### 4. Test the Webhook
+
+1. Make a small change to your repository
+2. Commit and push the change
+3. Check if the changes were automatically deployed to your server
+4. Check the log file for any errors:
+
+```bash
+cat /var/www/webhooks/webhook-log.txt
+```
+
+## Adding New Repositories
+
+1. Add the new repository to `repositories.json`
+2. Generate a new secret key
+3. Set up a webhook in GitHub using the new secret key
+
+## Troubleshooting
+
+- Check the log file: `/var/www/webhooks/webhook-log.txt`
+- Make sure the web server user has permission to execute git commands
+- Verify that the webhook is properly configured in GitHub
+- Check that the repository paths in `repositories.json` are correct 
