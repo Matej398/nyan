@@ -47,7 +47,7 @@ This will:
 Make sure your web server is configured to serve the game files. The game should be accessible at:
 
 ```
-https://yourdomain.com/projects/nyan/
+https://yourdomain.com/nyan/
 ```
 
 ### 3. Setup Verification
@@ -55,7 +55,7 @@ https://yourdomain.com/projects/nyan/
 Visit the setup page to verify that everything is working correctly:
 
 ```
-https://yourdomain.com/projects/nyan/php/setup.php
+https://yourdomain.com/nyan/php/setup.php
 ```
 
 This page will:

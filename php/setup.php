@@ -121,15 +121,15 @@ header('Content-Type: text/html');
         <h2>Step 4: API Endpoints</h2>
         <p>The following API endpoints should be accessible:</p>
         <ul>
-            <li><a href="/projects/nyan/php/get_leaderboard.php" target="_blank">Get Leaderboard API</a></li>
-            <li>Save Score API (POST to /projects/nyan/php/save_score.php)</li>
+            <li><a href="/nyan/php/get_leaderboard.php" target="_blank">Get Leaderboard API</a></li>
+            <li>Save Score API (POST to /nyan/php/save_score.php)</li>
         </ul>
     </div>
     
     <div class="step">
         <h2>Step 5: Game Access</h2>
         <p>The game should be accessible at:</p>
-        <p><a href="/projects/nyan/" target="_blank">Nyan Game</a></p>
+        <p><a href="/nyan/" target="_blank">Nyan Game</a></p>
     </div>
 </body>
 </html> 

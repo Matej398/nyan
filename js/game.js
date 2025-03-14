@@ -56,7 +56,7 @@ let leaderboard = []; // Initialize empty, will fetch from server
 const maxLeaderboardEntries = 5;
 
 // Fetch initial leaderboard from server
-fetch('/projects/nyan/php/get_leaderboard.php')
+fetch('/nyan/php/get_leaderboard.php')
     .then(response => response.json())
     .then(data => leaderboard = data)
     .catch(error => console.error('Error fetching initial leaderboard:', error));
@@ -183,7 +183,7 @@ function spawnPipe() {
 
 function updateLeaderboard() {
     const newEntry = { name: playerName, score: score };
-    fetch('/projects/nyan/php/save_score.php', {
+    fetch('/nyan/php/save_score.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: playerName, score: score })
@@ -192,7 +192,7 @@ function updateLeaderboard() {
     .then(data => {
         if (data.success) {
             // Refresh leaderboard from server
-            fetch('/projects/nyan/php/get_leaderboard.php')
+            fetch('/nyan/php/get_leaderboard.php')
                 .then(response => response.json())
                 .then(data => {
                     leaderboard = data;
@@ -247,7 +247,7 @@ function drawRainbowPipe(x, topHeight) {
 
     for (let i = 0; i < colors.length; i++) {
         gameCtx.fillStyle = colors[colors.length - 1 - i];
-        gameCtx.fillRect(Math.floor(x), Math.floor(customY + (i * bottomHeight)), pipeWidth, bottomHeight);
+        gameCtx.fillRect(Math.floor(x), Math.floor(bottomY + (i * bottomHeight)), pipeWidth, bottomHeight);
     }
     gameCtx.fillStyle = colors[colors.length - 1];
     gameCtx.beginPath();
