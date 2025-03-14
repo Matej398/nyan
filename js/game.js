@@ -56,13 +56,13 @@ let leaderboard = []; // Initialize empty, will fetch from server
 const maxLeaderboardEntries = 5;
 
 // Fetch initial leaderboard from server
-fetch('./get_leaderboard.php')
+fetch('/projects/nyan/php/get_leaderboard.php')
     .then(response => response.json())
     .then(data => leaderboard = data)
     .catch(error => console.error('Error fetching initial leaderboard:', error));
 
 const nyanCatImg = new Image();
-nyanCatImg.src = "./nyan-sprite.png";
+nyanCatImg.src = "assets/nyan-sprite.png";
 nyanCatImg.onerror = () => console.error("Failed to load nyan-sprite.png");
 
 const namePrompt = document.getElementById("namePrompt");
@@ -183,16 +183,16 @@ function spawnPipe() {
 
 function updateLeaderboard() {
     const newEntry = { name: playerName, score: score };
-    fetch('./save_score.php', {
+    fetch('/projects/nyan/php/save_score.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `name=${encodeURIComponent(playerName)}&score=${score}`
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: playerName, score: score })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             // Refresh leaderboard from server
-            fetch('./get_leaderboard.php')
+            fetch('/projects/nyan/php/get_leaderboard.php')
                 .then(response => response.json())
                 .then(data => {
                     leaderboard = data;
