@@ -121,8 +121,8 @@ header('Content-Type: text/html');
         <h2>Step 4: API Endpoints</h2>
         <p>The following API endpoints should be accessible:</p>
         <ul>
-            <li><a href="/nyan/php/get_leaderboard.php" target="_blank">Get Leaderboard API</a></li>
-            <li>Save Score API (POST to /nyan/php/save_score.php)</li>
+            <li><a href="/nyan/get_leaderboard.php" target="_blank">Get Leaderboard API</a></li>
+            <li>Save Score API (POST to /nyan/save_score.php)</li>
         </ul>
     </div>
     

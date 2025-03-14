@@ -42,7 +42,7 @@ let pipeSpawnTimer = 0;
 const pipeSpawnInterval = 100;
 
 let score = 0;
-let highScore = 0;
+let highScore = parseInt(localStorage.getItem('nyanHighScore') || '0');
 let gameOver = false;
 let gameStarted = false;
 let crashTime = 0;
@@ -56,7 +56,7 @@ let leaderboard = []; // Initialize empty, will fetch from server
 const maxLeaderboardEntries = 5;
 
 // Fetch initial leaderboard from server
-fetch('/nyan/php/get_leaderboard.php')
+fetch('/nyan/get_leaderboard.php')
     .then(response => response.json())
     .then(data => leaderboard = data)
     .catch(error => console.error('Error fetching initial leaderboard:', error));
@@ -183,7 +183,7 @@ function spawnPipe() {
 
 function updateLeaderboard() {
     const newEntry = { name: playerName, score: score };
-    fetch('/nyan/php/save_score.php', {
+    fetch('/nyan/save_score.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: playerName, score: score })
@@ -192,7 +192,7 @@ function updateLeaderboard() {
     .then(data => {
         if (data.success) {
             // Refresh leaderboard from server
-            fetch('/nyan/php/get_leaderboard.php')
+            fetch('/nyan/get_leaderboard.php')
                 .then(response => response.json())
                 .then(data => {
                     leaderboard = data;
@@ -216,7 +216,10 @@ function resetGame() {
     nyanY = gameCanvas ? gameCanvas.height / 2 - displayHeight / 2 : 0;
     velocity = 0;
     pipes = [];
-    if (score > highScore) highScore = score;
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('nyanHighScore', highScore.toString());
+    }
     score = 0;
     gameOver = false;
     gameStarted = false;

@@ -16,12 +16,15 @@ nyan/
 │   └── styles.css
 ├── js/               # JavaScript files
 │   └── game.js
-├── php/              # PHP backend files
+├── php/              # PHP backend files (for development)
 │   ├── db_config.php
 │   ├── get_leaderboard.php
 │   ├── save_score.php
 │   ├── setup.php
 │   └── setup_database.sql
+├── get_leaderboard.php  # API endpoint (copy from php/ folder)
+├── save_score.php       # API endpoint (copy from php/ folder)
+├── db_config.php        # Database config (copy from php/ folder)
 ├── index.html        # Main game page
 └── README.md         # This file
 ```
@@ -50,7 +53,18 @@ Make sure your web server is configured to serve the game files. The game should
 https://yourdomain.com/nyan/
 ```
 
-### 3. Setup Verification
+### 3. PHP Files Setup
+
+**Important:** The PHP files need to be in the correct location. Copy these files from the `php/` directory to the root of your nyan directory:
+
+```bash
+# On your server
+cp php/db_config.php ./
+cp php/get_leaderboard.php ./
+cp php/save_score.php ./
+```
+
+### 4. Setup Verification
 
 Visit the setup page to verify that everything is working correctly:
 
@@ -64,7 +78,7 @@ This page will:
 - Show the current top scores
 - Provide links to test the API endpoints
 
-### 4. Playing the Game
+### 5. Playing the Game
 
 1. Open the game in your browser
 2. Press Space or click to start
@@ -78,9 +92,10 @@ This page will:
 If you encounter issues:
 
 1. Check the setup page for any errors
-2. Verify that the database connection details in `php/db_config.php` are correct
+2. Verify that the database connection details in `db_config.php` are correct
 3. Check the web server error logs for any PHP errors
 4. Ensure the paths in the fetch calls in `js/game.js` match your server configuration
+5. Make sure the PHP files are in the correct location (both in the php/ directory and in the root)
 
 ## Credits
 
