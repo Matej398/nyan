@@ -2,9 +2,9 @@
 // Database configuration
 function getDbConnection() {
     $host = 'localhost';
-    $username = 'nyan_user';
-    $password = 'nyan_password';
-    $database = 'nyan_game';
+    $username = 'u775386788_nyanuser';
+    $database = 'u775386788_nyan';
+    $password = 'NyanCat2024!';
     
     $db = new mysqli($host, $username, $password, $database);
     
