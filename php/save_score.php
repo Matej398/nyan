@@ -1,27 +1,31 @@
 <?php
 header('Content-Type: application/json');
+
 // Include database configuration
-require_once 'db_config.php';
+require_once __DIR__ . '/db_config.php';
+
+// Get POST data
+$data = json_decode(file_get_contents('php://input'), true);
+
+if (!isset($data['name']) || !isset($data['score'])) {
+    echo json_encode(['success' => false, 'error' => 'Missing name or score']);
+    exit;
+}
+
+$name = $data['name'];
+$score = intval($data['score']);
 
 // Get database connection
 $db = getDbConnection();
 
-// Get POST data
-$data = json_decode(file_get_contents('php://input'), true);
-$name = isset($data['name']) ? $db->real_escape_string($data['name']) : '';
-$score = isset($data['score']) ? intval($data['score']) : 0;
-
-if (empty($name) || $score <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Invalid data']);
-    exit;
-}
-
-// Insert score into database
+// Prepare and execute the query
 $stmt = $db->prepare("INSERT INTO leaderboard (name, score) VALUES (?, ?)");
 $stmt->bind_param("si", $name, $score);
-$result = $stmt->execute();
+
+$success = $stmt->execute();
+
 $stmt->close();
 $db->close();
 
-echo json_encode(['success' => $result]);
+echo json_encode(['success' => $success]);
 ?>

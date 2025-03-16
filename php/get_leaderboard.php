@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 // Include database configuration
-require_once 'db_config.php';
+require_once __DIR__ . '/db_config.php';
 
 // Get database connection
 $db = getDbConnection();
