@@ -56,7 +56,7 @@ let leaderboard = []; // Initialize empty, will fetch from server
 const maxLeaderboardEntries = 5;
 
 // Fetch initial leaderboard from server
-fetch('get_leaderboard.php')
+fetch('php/get_leaderboard.php')
     .then(response => response.json())
     .then(data => leaderboard = data)
     .catch(error => console.error('Error fetching initial leaderboard:', error));
@@ -183,29 +183,59 @@ function spawnPipe() {
 
 function updateLeaderboard() {
     const newEntry = { name: playerName, score: score };
-    fetch('save_score.php', {
+    fetch('php/save_score.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: playerName, score: score })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.error || `HTTP error! status: ${response.status}`);
+            }).catch(() => {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             // Refresh leaderboard from server
-            fetch('get_leaderboard.php')
-                .then(response => response.json())
+            fetch('php/get_leaderboard.php')
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.error || `HTTP error! status: ${response.status}`);
+                        }).catch(() => {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        });
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    leaderboard = data;
+                    if (data && data.error) {
+                        console.error('Server error refreshing leaderboard:', data.error);
+                    } else {
+                        leaderboard = data || [];
+                        console.log('Leaderboard refreshed:', leaderboard);
+                    }
                     showLeaderboard = true;
                     showNamePrompt = false;
                     if (namePrompt) namePrompt.style.display = "none";
                 })
-                .catch(error => console.error('Error refreshing leaderboard:', error));
+                .catch(error => {
+                    console.error('Error refreshing leaderboard:', error);
+                    showLeaderboard = true;
+                    showNamePrompt = false;
+                    if (namePrompt) namePrompt.style.display = "none";
+                });
         } else {
-            console.error('Failed to save score:', data.error);
+            console.error('Failed to save score:', data.error || 'Unknown error');
         }
     })
-    .catch(error => console.error('Error saving score:', error));
+    .catch(error => {
+        console.error('Error saving score:', error);
+    });
 }
 
 function resetGame() {
